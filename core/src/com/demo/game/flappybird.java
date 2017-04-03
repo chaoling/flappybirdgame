@@ -3,6 +3,7 @@ package com.demo.game;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import java.util.Random;
@@ -10,11 +11,13 @@ import java.util.Random;
 public class flappybird extends ApplicationAdapter {
 	private int mFlapState = 0;
 	private int mGameState = 0;
+
 	SpriteBatch batch;
 	Texture background;
 	Texture[] birds;
 	Texture topTube;
 	Texture bottomTube;
+	BitmapFont font;
 	float birdY = 0;
 	float velocity = 0;
 	float gravity = 2;
@@ -26,13 +29,19 @@ public class flappybird extends ApplicationAdapter {
 	float[] tubeX = new float[numOfTubes];
 	float tubeVelocity = 4;
 	float distanceBetweenTubes;
+	int mScore = 0;
+	int mScoreTube;
 
 
 	
 	@Override
 	public void create () {
+
 		batch = new SpriteBatch();
 		background = new Texture("bg.png");
+		font = new BitmapFont();
+		mScore = 0;
+		mScoreTube = 0;
 		birds = new Texture[2];
 		birds[0] = new Texture("bird.png");
 		birds[1] = new Texture("bird2.png");
@@ -42,7 +51,7 @@ public class flappybird extends ApplicationAdapter {
 		maxGapOffset = Gdx.graphics.getHeight()/2 - gap / 2 - 100;
 		distanceBetweenTubes = Gdx.graphics.getWidth()*3/4;
 		randomGenerator = new Random();
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < numOfTubes; i++) {
 			tubeX[i] = Gdx.graphics.getWidth() / 2 - topTube.getWidth() / 2 + i * distanceBetweenTubes;
 			tubeOffset[i] = (randomGenerator.nextFloat()-0.5f)*(Gdx.graphics.getHeight() - gap - 200);
 		}
@@ -54,7 +63,6 @@ public class flappybird extends ApplicationAdapter {
 			Gdx.app.log("flappyGame","touched");
 			mGameState = 1;
 			velocity = -20;
-
 		}
 	}
 
@@ -62,7 +70,12 @@ public class flappybird extends ApplicationAdapter {
 		if (mGameState != 0) {
 			mFlapState = mFlapState == 0 ? 1 : 0;
 			velocity += gravity;
-			for (int i=0; i < 4; i++) {
+			//keep track of score:
+			if (tubeX[mScoreTube] < Gdx.graphics.getWidth()/2) {
+				mScore +=10;
+				mScoreTube = (mScoreTube + 1)%numOfTubes;
+			}
+			for (int i=0; i < numOfTubes; i++) {
 				if (tubeX[i] < -topTube.getWidth()) {
 					//just moved out of the screen
 					tubeX[i] += numOfTubes * distanceBetweenTubes;
@@ -82,22 +95,44 @@ public class flappybird extends ApplicationAdapter {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);*/
 		checkInput();
 		update();
-		batch.begin();
 
-		batch.draw(background, 0, 0, Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
-		for (int i=0; i < 4; i++) {
-			batch.draw(topTube, tubeX[i],
-					Gdx.graphics.getHeight() / 2 + gap / 2 + tubeOffset[i]);
-			batch.draw(bottomTube, tubeX[i],
-					Gdx.graphics.getHeight() / 2 - gap / 2 - bottomTube.getHeight() + tubeOffset[i]);
+		batch.begin();
+		switch (mGameState) {
+			case 0: //Game Entry Page
+				batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+				font.setColor(1.0f, 0.0f, 0.0f,1.0f);
+				font.getData().setScale(8);
+				font.draw(batch,"Start Game",Gdx.graphics.getWidth()/2-font.getRegion().getRegionWidth()-font.getSpaceWidth()*2, Gdx.graphics.getHeight()/2+font.getRegion().getRegionHeight()/2);
+				break;
+			case 1: //game level 1
+				batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+				for (int i = 0; i < 4; i++) {
+					batch.draw(topTube, tubeX[i],
+							Gdx.graphics.getHeight() / 2 + gap / 2 + tubeOffset[i]);
+					batch.draw(bottomTube, tubeX[i],
+							Gdx.graphics.getHeight() / 2 - gap / 2 - bottomTube.getHeight() + tubeOffset[i]);
+				}
+				batch.draw(birds[mFlapState], Gdx.graphics.getWidth() / 2 - birds[mFlapState].getWidth() / 2,
+						birdY);
+				font.setColor(1.0f, 0.0f, 0.0f,1.0f);
+				font.getData().setScale(8);
+				font.draw(batch,"Score: "+String.valueOf(mScore),100, 100);
+				break;
+			case -1:
+				//Game Over
+				batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+				font.setColor(1.0f, 0.0f, 0.0f,1.0f);
+				font.getData().setScale(8);
+				font.draw(batch,"Game Over",Gdx.graphics.getWidth()/2-font.getRegion().getRegionWidth()-font.getSpaceWidth()*2, Gdx.graphics.getHeight()/2+font.getRegion().getRegionHeight()/2);
+				font.draw(batch,"Score: "+String.valueOf(mScore),100, 100);
+				break;
 		}
-		batch.draw(birds[mFlapState], Gdx.graphics.getWidth()/2 - birds[mFlapState].getWidth()/2,
-				birdY);
 		batch.end();
 	}
 	
 	@Override
 	public void dispose () {
+
 		batch.dispose();
 		background.dispose();
 		birds[0].dispose();
