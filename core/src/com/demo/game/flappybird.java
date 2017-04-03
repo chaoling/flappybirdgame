@@ -21,9 +21,12 @@ public class flappybird extends ApplicationAdapter {
 	float gap = 400;
 	float maxGapOffset;
 	Random randomGenerator;
-	float tubeOffset;
-	float tubeX;
-	float tubeVelocity;
+	int numOfTubes = 4;
+	float[] tubeOffset = new float[numOfTubes];
+	float[] tubeX = new float[numOfTubes];
+	float tubeVelocity = 4;
+	float distanceBetweenTubes;
+
 
 	
 	@Override
@@ -37,8 +40,13 @@ public class flappybird extends ApplicationAdapter {
 		bottomTube = new Texture("bottomtube.png");
 		birdY = Gdx.graphics.getHeight()/2-birds[0].getHeight()/2;
 		maxGapOffset = Gdx.graphics.getHeight()/2 - gap / 2 - 100;
+		distanceBetweenTubes = Gdx.graphics.getWidth() *3/4;
 		randomGenerator = new Random();
-		tubeX = Gdx.graphics.getWidth()/2 - topTube.getWidth()/2;
+		for (int i = 0; i < 4; i++) {
+			tubeX[i] = Gdx.graphics.getWidth() / 2 - topTube.getWidth() / 2 + i* distanceBetweenTubes;
+			tubeOffset[i] = (randomGenerator.nextFloat()*0.5f)*(Gdx.graphics.getHeight() - gap - 200);
+		}
+
 	}
 
 	private void checkInput() {
@@ -46,7 +54,7 @@ public class flappybird extends ApplicationAdapter {
 			Gdx.app.log("Touched","wow");
 			mGameState = 1;
 			velocity = -30;
-			tubeOffset = (randomGenerator.nextFloat()*0.5f)*(Gdx.graphics.getHeight() - gap - 200);
+
 		}
 	}
 
@@ -54,7 +62,14 @@ public class flappybird extends ApplicationAdapter {
 		if (mGameState != 0) {
 			mFlapState = mFlapState == 0 ? 1 : 0;
 			velocity += gravity;
-			tubeX -= 4;
+			for (int i=0; i < 4; i++) {
+				if (tubeX[i] < -topTube.getWidth()) {
+					//just moved out of the screen
+					tubeX[i] += numOfTubes * distanceBetweenTubes;
+				} else {
+					tubeX[i] -= tubeVelocity;
+				}
+			}
 			if (birdY - velocity > 0 || velocity <0) {
 				birdY -= velocity;
 			}
@@ -70,10 +85,12 @@ public class flappybird extends ApplicationAdapter {
 		batch.begin();
 
 		batch.draw(background, 0, 0, Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
-		batch.draw(topTube, tubeX,
-				Gdx.graphics.getHeight()/2 + gap/2 + tubeOffset);
-		batch.draw(bottomTube, tubeX,
-				Gdx.graphics.getHeight()/2 - gap/2 - bottomTube.getHeight() + tubeOffset);
+		for (int i=0; i < 4; i++) {
+			batch.draw(topTube, tubeX[i],
+					Gdx.graphics.getHeight() / 2 + gap / 2 + tubeOffset[i]);
+			batch.draw(bottomTube, tubeX[i],
+					Gdx.graphics.getHeight() / 2 - gap / 2 - bottomTube.getHeight() + tubeOffset[i]);
+		}
 		batch.draw(birds[mFlapState], Gdx.graphics.getWidth()/2 - birds[mFlapState].getWidth()/2,
 				birdY);
 		batch.end();
