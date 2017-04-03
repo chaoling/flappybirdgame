@@ -40,20 +40,20 @@ public class flappybird extends ApplicationAdapter {
 		bottomTube = new Texture("bottomtube.png");
 		birdY = Gdx.graphics.getHeight()/2-birds[0].getHeight()/2;
 		maxGapOffset = Gdx.graphics.getHeight()/2 - gap / 2 - 100;
-		distanceBetweenTubes = Gdx.graphics.getWidth() *3/4;
+		distanceBetweenTubes = Gdx.graphics.getWidth()*3/4;
 		randomGenerator = new Random();
 		for (int i = 0; i < 4; i++) {
-			tubeX[i] = Gdx.graphics.getWidth() / 2 - topTube.getWidth() / 2 + i* distanceBetweenTubes;
-			tubeOffset[i] = (randomGenerator.nextFloat()*0.5f)*(Gdx.graphics.getHeight() - gap - 200);
+			tubeX[i] = Gdx.graphics.getWidth() / 2 - topTube.getWidth() / 2 + i * distanceBetweenTubes;
+			tubeOffset[i] = (randomGenerator.nextFloat()-0.5f)*(Gdx.graphics.getHeight() - gap - 200);
 		}
 
 	}
 
 	private void checkInput() {
 		if (Gdx.input.justTouched()) {
-			Gdx.app.log("Touched","wow");
+			Gdx.app.log("flappyGame","touched");
 			mGameState = 1;
-			velocity = -30;
+			velocity = -20;
 
 		}
 	}
@@ -70,7 +70,7 @@ public class flappybird extends ApplicationAdapter {
 					tubeX[i] -= tubeVelocity;
 				}
 			}
-			if (birdY - velocity > 0 || velocity <0) {
+			if (birdY - velocity > 0 && birdY - velocity < Gdx.graphics.getHeight() - birds[0].getHeight()) {
 				birdY -= velocity;
 			}
 		}
@@ -102,5 +102,7 @@ public class flappybird extends ApplicationAdapter {
 		background.dispose();
 		birds[0].dispose();
 		birds[1].dispose();
+		topTube.dispose();
+		bottomTube.dispose();
 	}
 }
