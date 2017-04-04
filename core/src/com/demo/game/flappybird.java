@@ -100,6 +100,7 @@ public class flappybird extends ApplicationAdapter {
                     Gdx.app.log("flappy debug","increase 1 life");
                 }
             }
+
             birdCircle.set(Gdx.graphics.getWidth() / 2,
                     birdY + birds[mFlapState].getHeight() / 2, birds[mFlapState].getWidth() / 2);
             topTubeRectangles[mScoreTube].set(tubeX[mScoreTube], Gdx.graphics.getHeight() / 2 + gap / 2 + tubeOffset[mScoreTube],
@@ -110,12 +111,13 @@ public class flappybird extends ApplicationAdapter {
                 //collision detected!!!
                 Gdx.app.log("FlappyBirds", "collision detected!!!");
                 mScoreTube = (mScoreTube + 1) % numOfTubes;
-                mScore -= 10;
+                mLives -= 1;
+                /*mScore -= 10;
                 if (mScore < 0 || (mScore % 50 == 0 && mScore - mLastLifePoint*50 < 0)) {
                     Gdx.app.log("flappy debug","decrease 1 life");
                     mLives -= 1;
                 }
-                mScore = mScore <= 0? 0 : mScore;
+                mScore = mScore <= 0? 0 : mScore;*/
                 if (mLives == 0) {
                     mGameState = -1; //Game Over State
                 }
@@ -125,6 +127,7 @@ public class flappybird extends ApplicationAdapter {
                 if (tubeX[i] < -topTube.getWidth()) {
                     //just moved out of the screen
                     tubeX[i] += numOfTubes * distanceBetweenTubes;
+                    tubeOffset[i] = (randomGenerator.nextFloat() - 0.5f) * (Gdx.graphics.getHeight() - gap - 200);
                 } else {
                     tubeX[i] -= tubeVelocity;
                 }
