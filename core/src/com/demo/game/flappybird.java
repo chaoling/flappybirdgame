@@ -40,6 +40,8 @@ public class flappybird extends ApplicationAdapter {
     Circle birdCircle;
     //ShapeRenderer shapeRenderer;
     Texture gameover;
+    int mLives;
+    int mLastLifePoint;
 
 
     @Override
@@ -92,6 +94,11 @@ public class flappybird extends ApplicationAdapter {
             if (tubeX[mScoreTube] + topTube.getWidth() < Gdx.graphics.getWidth() / 2) {
                 mScore += 10;
                 mScoreTube = (mScoreTube + 1) % numOfTubes;
+                if(mScore % 50 == 0 && mScore - mLastLifePoint*50 > 0) {
+                    mLives += 1;
+                    mLastLifePoint = mScore/50;
+                    Gdx.app.log("flappy debug","increase 1 life");
+                }
             }
             birdCircle.set(Gdx.graphics.getWidth() / 2,
                     birdY + birds[mFlapState].getHeight() / 2, birds[mFlapState].getWidth() / 2);
@@ -102,7 +109,16 @@ public class flappybird extends ApplicationAdapter {
             if (Intersector.overlaps(birdCircle, topTubeRectangles[mScoreTube]) || Intersector.overlaps(birdCircle, bottomTubeRectangles[mScoreTube])) {
                 //collision detected!!!
                 Gdx.app.log("FlappyBirds", "collision detected!!!");
-                mGameState = -1; //Game Over State
+                mScoreTube = (mScoreTube + 1) % numOfTubes;
+                mScore -= 10;
+                if (mScore < 0 || (mScore % 50 == 0 && mScore - mLastLifePoint*50 < 0)) {
+                    Gdx.app.log("flappy debug","decrease 1 life");
+                    mLives -= 1;
+                }
+                mScore = mScore <= 0? 0 : mScore;
+                if (mLives == 0) {
+                    mGameState = -1; //Game Over State
+                }
             }
             for (int i = 0; i < numOfTubes; i++) {
 
@@ -146,7 +162,7 @@ public class flappybird extends ApplicationAdapter {
                         birdY);
                 font.setColor(1.0f, 0.0f, 0.0f, 1.0f);
                 font.getData().setScale(8);
-                font.draw(batch, "Score: " + String.valueOf(mScore), 100, 200);
+                font.draw(batch, "Score: " + String.valueOf(mScore)+(mLives > 1? " Lives: ":" Life: ")+String.valueOf(mLives), 80, 200);
                 break;
             case -1:
                 //Game Over
@@ -188,8 +204,10 @@ public class flappybird extends ApplicationAdapter {
     }
 
     private void resetGame() {
+        mLives = 3;
         mScore = 0;
         mScoreTube = 0;
+        mLastLifePoint = 0;
         birdY = Gdx.graphics.getHeight() / 2 - birds[0].getHeight() / 2;
         maxGapOffset = Gdx.graphics.getHeight() / 2 - gap / 2 - 100;
         distanceBetweenTubes = Gdx.graphics.getWidth() * 3 / 4;
