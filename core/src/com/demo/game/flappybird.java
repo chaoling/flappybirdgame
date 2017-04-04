@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Circle;
+import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
 
 import java.util.Random;
@@ -89,11 +90,18 @@ public class flappybird extends ApplicationAdapter {
 				mScore +=10;
 				mScoreTube = (mScoreTube + 1)%numOfTubes;
 			}
+			birdCircle.set(Gdx.graphics.getWidth() / 2,
+					birdY+birds[mFlapState].getHeight()/2, birds[mFlapState].getWidth()/2);
 			for (int i=0; i < numOfTubes; i++) {
 				topTubeRectangles[i].set(tubeX[i],Gdx.graphics.getHeight() / 2 + gap / 2 + tubeOffset[i],
 						topTube.getWidth(),topTube.getHeight());
 				bottomTubeRectangles[i].set(tubeX[i],Gdx.graphics.getHeight()/2 - gap/2 - bottomTube.getHeight()
 						+ tubeOffset[i], bottomTube.getWidth(),bottomTube.getHeight());
+				if (Intersector.overlaps(birdCircle,topTubeRectangles[i]) || Intersector.overlaps(birdCircle, bottomTubeRectangles[i])) {
+					//collision detected!!!
+					Gdx.app.log("FlappyBirds","collision detected!!!");
+
+				}
 				if (tubeX[i] < -topTube.getWidth()) {
 					//just moved out of the screen
 					tubeX[i] += numOfTubes * distanceBetweenTubes;
@@ -149,8 +157,7 @@ public class flappybird extends ApplicationAdapter {
 		}
 		batch.end();
 		//shape renderer
-		birdCircle.set(Gdx.graphics.getWidth() / 2,
-				birdY+birds[mFlapState].getHeight()/2, birds[mFlapState].getWidth()/2);
+
 		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 		shapeRenderer.setColor(Color.RED);
 		shapeRenderer.circle(birdCircle.x,birdCircle.y,birdCircle.radius);
